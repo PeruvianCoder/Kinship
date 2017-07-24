@@ -6,7 +6,8 @@ clc;
 addpath('nrml');
 
 %% data & parametres
-load('data\LBP_KinFaceW-II_FS.mat');
+%%load('data\LBP_KinFaceW-II_FS.mat');
+load('data/LBP_KinFaceW-II_FS (2).mat');
 
 T = 1;        % Iterations
 knn = 5;      % k-nearest neighbors
@@ -16,25 +17,28 @@ un = unique(fold);
 nfold = length(un);
 
 %%Somehow this supposedly deletes previous saved features??
-featureMatrix = load('data\LBP_KinFaceW-II_FS.mat', 'ux');
+%%featureMatrix = load('data\LBP_KinFaceW-II_FS.mat', 'ux');
+featureMatrix = load('data/LBP_KinFaceW-II_FS (2).mat', 'ux');
 featureMatrix = featureMatrix.ux;
 [r,c] = size(featureMatrix);
 
 %%reload new LBP feature file
 while(r > 500)
-    fprintf('Greater than 500');
+    %%fprintf('Greater than 500');
     featureMatrix(501, :) = [];
     [r,c] = size(featureMatrix);
 end
 ux = featureMatrix;
-save('data\LBP_KinFaceW-II_FS.mat', 'ux', '-append');
+%%save('data\LBP_KinFaceW-II_FS.mat', 'ux', '-append');
+save('data/LBP_KinFaceW-II_FS (2).mat', 'ux', '-append');
 
 %%use new images to create new features into LBP
 images = dir('C:\Users\CarlosGri\Documents\kiniship\images\*.jpg');
 for image = images'
     gen_feature(strcat('C:\Users\CarlosGri\Documents\kiniship\images\' , image.name))
 end
-load('data/LBP_KinFaceW-II_FS.mat');
+%%load('data/LBP_KinFaceW-II_FS.mat');
+load('data/LBP_KinFaceW-II_FS (2).mat');
 
 % for image = images'
 %     fname=image.name;
