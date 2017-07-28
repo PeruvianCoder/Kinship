@@ -3,6 +3,7 @@ package com.fiu.carlosgri.mvapifacedetection;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inMutable = true;
-            options.inSampleSize = 4;
+            options.inSampleSize = 1;
             options.inPreferredConfig = Bitmap.Config.RGB_565;
 
             Bitmap myBitmap = BitmapFactory.decodeFile(picturePath, options);
@@ -161,12 +162,15 @@ public class MainActivity extends AppCompatActivity {
                 tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
                 //Bitmap bmFace2 = Bitmap.createBitmap(myBitmap, (int) x1, (int) y1, (int) thisFace.getWidth(), (int) thisFace.getHeight());
                 Bitmap bmFace = Bitmap.createBitmap(myBitmap, (int) x1, (int) y1, (int) thisFace.getWidth(), (int) thisFace.getHeight());
-                imgToUpload = convertBitmapToString(bmFace);
+                Bitmap tempMap = getResizedBitmap(bmFace, 64, 64);
+                //Bitmap tempMap = Bitmap.createScaledBitmap(bmFace, 64, 64, false);
+                imgToUpload = convertBitmapToString(tempMap);
                 Log.d("First image", "This is the first image: " + imgToUpload);
-//                String imgToUpload2 = convertBitmapToString(bmFace2);
-//                Log.d("First image", "GOODLUCK This is the first image: " + imgToUpload2);
             }
-            myImageView.setImageBitmap(tempBitmap);
+            //myImageView.setImageBitmap(tempBitmap);
+            //Bitmap tempMap = Bitmap.createScaledBitmap(tempBitmap, 120, 120, false);
+            //imgToUpload = convertBitmapToString(tempMap);
+            myImageView.setImageBitmap(Bitmap.createScaledBitmap(tempBitmap, 360, 360, false));
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("tempImg", imgToUpload);
@@ -191,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inMutable = true;
-            options.inSampleSize = 4;
+            options.inSampleSize = 1;
 
             options.inPreferredConfig = Bitmap.Config.RGB_565;
 
@@ -239,14 +243,18 @@ public class MainActivity extends AppCompatActivity {
                 //Bitmap bmFace = Bitmap.createBitmap(myBitmap, (int) thisFace.getPosition().x, (int) thisFace.getPosition().y, (int) thisFace.getWidth() + (int) thisFace.getPosition().x, (int) thisFace.getHeight() + (int) thisFace.getPosition().y);
 
                 Bitmap bmFace = Bitmap.createBitmap(myBitmap, (int) x1, (int) y1, (int) thisFace.getWidth(), (int) thisFace.getHeight());
-                imgToUpload2 = convertBitmapToString(bmFace);
+                Bitmap tempMap = getResizedBitmap(bmFace, 64, 64);
+                //Bitmap tempMap = Bitmap.createScaledBitmap(bmFace, 64, 64, false);
+                imgToUpload2 = convertBitmapToString(tempMap);
                 Log.d("Second image boom", "This is the second image: " + imgToUpload2);
             }
-            myImageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+            //myImageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+            //imgToUpload2 = convertBitmapToString(tempMap);
+            myImageView.setImageBitmap(Bitmap.createScaledBitmap(tempBitmap, 360, 360, false));
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
             String imgToUpload1 = preferences.getString("tempImg", "Empty");
-
             if (imgToUpload1.equals("Empty") || imgToUpload2.equals("Empty")) {
                 System.out.println("There was a problem preparing the images to send to the server.");
                 Log.d("Image Failed Server", "There was a problem preparing the images to send to the server.");
@@ -255,13 +263,29 @@ public class MainActivity extends AppCompatActivity {
                 //sendImgToServer(imgToUpload1, imgToUpload2);
                 Map<String, String> postData = new HashMap<>();
                 postData.put("file", imgToUpload1);
-                //postData.put("img2", imgToUpload2);
+                postData.put("file2", imgToUpload2);
                 postData.put("data", "test123");
                 //Log.d("First image", "This is the first image: " + imgToUpload1);
                 AsyncTask task = new LoadBitmaps(postData);
                 task.execute();
             }
         }
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
     }
 
     public String convertBitmapToString(Bitmap bmp) {
@@ -284,54 +308,30 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Object... str) {
             try {
-//                URL url = new URL("http://127.0.0.1:8000/faceDetect/pictureData/");
-//                HttpURLConnection client = (HttpURLConnection) url.openConnection();
-//                client.setRequestMethod("POST");
-//                //client.setRequestProperty("Key","Value");
-//                client.setRequestProperty("Content-Type", "application/json");
-//                client.setDoOutput(true);
-//
-////                Uri.Builder builder = new Uri.Builder()
-////                        .appendQueryParameter("img1", img1)
-////                        .appendQueryParameter("img2", img2);
-////                //.appendQueryParameter("thirdParam", paramValue3);
-////                String query = builder.build().getEncodedQuery();
-//
-//                OutputStream os = client.getOutputStream();
-//                BufferedWriter writer = new BufferedWriter(
-//                        new OutputStreamWriter(os, "UTF-8"));
-//                writer.write(postData.toString());
-//                writer.flush();
-//                writer.close();
-//                os.close();
-//
-//                client.connect();
-//                int response = client.getResponseCode();
-//                System.out.println("The response code is: " + response);
+                URL url = new URL("http://10.0.2.2:8000/faceDetect/PictureData/");
+                HttpURLConnection client = (HttpURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                //client.setRequestProperty("Key","Value");
+                client.setRequestProperty("Content-Type", "application/json");
+                client.setDoOutput(true);
 
-            //try {
+//                Uri.Builder builder = new Uri.Builder()
+//                        .appendQueryParameter("img1", img1)
+//                        .appendQueryParameter("img2", img2);
+//                //.appendQueryParameter("thirdParam", paramValue3);
+//                String query = builder.build().getEncodedQuery();
 
-                    //URL url = new URL("http://127.0.0.1:8000/faceDetect/pictureData/");
-                URL url = new URL("http://10.50.214.67:8000/faceDetect/pictureData/");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setRequestProperty("Content-Type", "application/json");
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(postData.toString());
+                writer.flush();
+                writer.close();
+                os.close();
 
-                    if (conn.getResponseCode() != 200) {
-                        throw new RuntimeException("Failed : HTTP error code : "
-                                + conn.getResponseCode());
-                    }
-
-                    BufferedReader br = new BufferedReader(new InputStreamReader(
-                            (conn.getInputStream())));
-
-                    String output;
-                    System.out.println("Output from Server .... \n");
-                    while ((output = br.readLine()) != null) {
-                        System.out.println(output);
-                    }
-
-                    conn.disconnect();
+                client.connect();
+                int response = client.getResponseCode();
+                System.out.println("The response code is: " + response);
 
             } catch (MalformedURLException error) {
                 //Handles an incorrectly entered URL

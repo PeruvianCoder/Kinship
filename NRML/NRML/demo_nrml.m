@@ -103,6 +103,9 @@ end
 %%print the similarity result
 resultFile = fopen('C:\Users\CarlosGri\Documents\result.txt' , 'w');
 fprintf(resultFile, '%6.4f', sim(101));
+if (sim(101) > sim(50))
+    fprintf(resultFile, '%6.4f', sim(101));
+end
 fprintf('The result is = %6.4f\n', sim(101));
 fclose(resultFile);
 

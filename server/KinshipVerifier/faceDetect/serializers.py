@@ -95,10 +95,12 @@ class UploadedBase64ImageSerializer(serializers.Serializer):
 
 class PictureDataSerializer(serializers.ModelSerializer):
 	file=Base64ImageField()
+	file2=Base64ImageField()
 	class Meta:
 		model=PictureData
-		fields= ('data','file')
+		fields= ('data','file','file2')
 	def create(self, validated_data):
 		file=validated_data.pop('file')
+		file2=validated_data.pop('file2')
 		data=validated_data.pop('data')
-		return PictureData.objects.create(data=data,file=file)
+		return PictureData.objects.create(data=data,file=file, file2=file2)

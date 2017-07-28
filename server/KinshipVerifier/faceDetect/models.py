@@ -10,5 +10,6 @@ class PictureData(models.Model):
 	# img2 = Base64ImageField(required=False)
 	# data1=models.BinaryField()
 	# data2=models.BinaryField()
-	file=models.ImageField(upload_to='geo_entity_pic', default='False.jpg')
+	file=models.ImageField(upload_to='kinImgs', default='False.jpg')
+	file2=models.ImageField(upload_to='kinImgs', default='False2.jpg')
 	data=models.CharField(max_length=1000, default='0000000')
