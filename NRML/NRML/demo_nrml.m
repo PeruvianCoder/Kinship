@@ -33,18 +33,18 @@ ux = featureMatrix;
 save('data/LBP_KinFaceW-II_FS (2).mat', 'ux', '-append');
 
 %%use new images to create new features into LBP
-images = dir('C:\Users\CarlosGri\Documents\kiniship\images\*.jpg');
+images = dir('C:\Users\CarlosGri\Development\projects\MVAPIFaceDetection\server\KinshipVerifier\kinImgs\*.jpg');
 for image = images'
-    gen_feature(strcat('C:\Users\CarlosGri\Documents\kiniship\images\' , image.name))
+    gen_feature(strcat('C:\Users\CarlosGri\Development\projects\MVAPIFaceDetection\server\KinshipVerifier\kinImgs\' , image.name))
 end
 %%load('data/LBP_KinFaceW-II_FS.mat');
 load('data/LBP_KinFaceW-II_FS (2).mat');
 
-% for image = images'
-%     fname=image.name;
-%     [pathstr, name, ext] = fileparts(fname);
-%     movefile(strcat('C:\Users\CarlosGri\Documents\kiniship\images\' ,fname), strcat('C:\Users\CarlosGri\Documents\kiniship\images\' ,fullfile(pathstr, [name '.jpg-done'])))
-% end
+for image = images'
+    fname=image.name;
+    [pathstr, name, ext] = fileparts(fname);
+    movefile(strcat('C:\Users\CarlosGri\Development\projects\MVAPIFaceDetection\server\KinshipVerifier\kinImgs\' ,fname), strcat('C:\Users\CarlosGri\Development\projects\MVAPIFaceDetection\server\KinshipVerifier\kinImgs\' ,fullfile(pathstr, [name '.jpg-done'])))
+end
 
 %% NRML
 t_sim = [];
@@ -102,13 +102,17 @@ end
 
 %%print the similarity result
 resultFile = fopen('C:\Users\CarlosGri\Documents\result.txt' , 'w');
-fprintf(resultFile, '%6.4f', sim(101));
-if (sim(101) > sim(50))
-    fprintf(resultFile, '%6.4f', sim(101));
+fprintf(resultFile, '%6.4f\n', sim(101));
+if (sim(101) < sim(50))
+    fprintf(resultFile, 'n');
+    fprintf('This is not a match.\n');
+else
+    fprintf(resultFile, 'y');
+    fprintf('This is a match.\n');
 end
 fprintf('The result is = %6.4f\n', sim(101));
 fclose(resultFile);
-
+exit;
 %% plot ROC
 % [fpr, tpr] = ROCcurve(t_sim, t_ts_matches);
 % figure(1)

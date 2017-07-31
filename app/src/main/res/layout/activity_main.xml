@@ -44,6 +44,7 @@
             android:id="@+id/imgview"
             android:scaleType="fitStart"
             android:layout_weight="1" />
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,6 +52,29 @@
             android:scaleType="fitStart"
             android:layout_weight="1" />
     </LinearLayout>
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/similarityTxt"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:scaleType="fitXY"
+            android:layout_marginTop="300dp"
+            android:layout_below="@id/imgview" />
+        <EditText
+            android:id="@+id/matchTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:scaleType="fitXY"
+            android:layout_marginTop="100dp"
+            android:layout_below="@id/imgview" />
+    </LinearLayout>
+
 
 
 </android.support.constraint.ConstraintLayout>

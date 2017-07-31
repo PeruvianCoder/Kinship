@@ -23,20 +23,25 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import android.database.Cursor;
 import android.support.v4.app.ActivityCompat;
+import android.widget.TextView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -57,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        EditText similarityTxt = (EditText) findViewById(R.id.similarityTxt);
+        EditText matchTxt = (EditText) findViewById(R.id.matchTxt);
+        similarityTxt.setVisibility(View.INVISIBLE);
+        matchTxt.setVisibility(View.INVISIBLE);
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -145,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
                 //new AlertDialog.Builder(v.getContext()).setMessage("Could not set up the face detector!").show();
                 return;
             }
-
 
 
             Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
@@ -295,10 +304,38 @@ public class MainActivity extends AppCompatActivity {
         String imageStr = Base64.encodeToString(byte_arr, Base64.NO_WRAP);
         return imageStr;
     }
-}
+
+    public void updateResults(String sim, String match){
+        //match = match.split("\\\\")[0].replace(" ", "");;
+        System.out.println("This is the length of match: " + match.length());
+        System.out.println("This is the match: " + match);
+        EditText similarityTxt = (EditText) findViewById(R.id.similarityTxt);
+        EditText matchTxt = (EditText) findViewById(R.id.matchTxt);
+
+        similarityTxt.setVisibility(View.VISIBLE);
+        matchTxt.setVisibility(View.VISIBLE);
+
+        double simD = Double.parseDouble(sim);
+        simD = simD * 100;
+        sim = String.valueOf(simD);
+
+        similarityTxt.setText("Similarity percentage: %" + sim, TextView.BufferType.EDITABLE);
+        System.out.println("The match is: " + match);
+        if(match.equals("y")){
+            matchTxt.setText("This is a match.", TextView.BufferType.EDITABLE);
+        }
+        else if(match.equals("n")){
+            matchTxt.setText("This is not a match.", TextView.BufferType.EDITABLE);
+        }
+
+        similarityTxt.setFocusable(false);
+        matchTxt.setFocusable(false);
+    }
+
     class LoadBitmaps extends AsyncTask<Object, Void, Void> {
         JSONObject postData;
-
+        String similarity = "";
+        String match = "";
         public LoadBitmaps(Map<String, String> postData) {
             if (postData != null) {
                 this.postData = new JSONObject(postData);
@@ -331,7 +368,51 @@ public class MainActivity extends AppCompatActivity {
 
                 client.connect();
                 int response = client.getResponseCode();
-                System.out.println("The response code is: " + response);
+                System.out.println("The response code for POST /faceDetect/PictureData/ is: " + response);
+
+                if (response == HttpURLConnection.HTTP_CREATED) {
+                    URL getUrl = new URL("http://10.0.2.2:8000/faceDetect/result/");
+                    HttpURLConnection getClient = (HttpURLConnection) getUrl.openConnection();
+                    getClient.setRequestMethod("GET");
+                    //client.setRequestProperty("Key","Value");
+                    getClient.setRequestProperty("Content-Type", "application/json");
+                    getClient.setDoOutput(true);
+
+//                Uri.Builder builder = new Uri.Builder()
+//                        .appendQueryParameter("img1", img1)
+//                        .appendQueryParameter("img2", img2);
+//                //.appendQueryParameter("thirdParam", paramValue3);
+//                String query = builder.build().getEncodedQuery();
+
+//                    OutputStream getOs = getClient.getOutputStream();
+//                    BufferedWriter getWriter = new BufferedWriter(
+//                            new OutputStreamWriter(getOs, "UTF-8"));
+//                    getWriter.write(postData.toString());
+//                    getWriter.flush();
+//                    getWriter.close();
+//                    getOs.close();
+//
+//                    client.connect();
+//
+                    InputStream in = new BufferedInputStream(getClient.getInputStream());
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    Log.d("JSON Parser", "result: " + result.toString());
+                    JSONObject resultObj = new JSONObject(result.toString());
+                    String sim = resultObj.optString("similarity").split("\\\\")[0];
+                    String mat = resultObj.optString("match"); //.split("\\\\")[0];
+                    similarity = sim;
+                    match = mat;
+                    int getResponse = getClient.getResponseCode();
+                    System.out.println("The response code for POST /faceDetect/PictureData/ is: " + response);
+                    System.out.println("The similarity is: " + similarity);
+                    System.out.println("The match is: " + match);
+                }
 
             } catch (MalformedURLException error) {
                 //Handles an incorrectly entered URL
@@ -342,10 +423,22 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException error) {
                 //Handles input and output errors
                 error.printStackTrace();
+            } catch (JSONException e) {
+                Log.e("JSON Parser", "Error parsing data " + e.toString());
             }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //do stuff
+            //myMethod(myValue);
+            System.out.println("The similarity in onPostExecute is: " + match);
+            //match = match.split("\\\\")[0];
+            updateResults(similarity, match);
+        }
     }
+}
 //        public void sendImgToServer(String img1, String img2) {
 //            try {
 //                URL url = new URL("http://127.0.0.1:8000/faceDetect/pictureData/");

@@ -67,32 +67,6 @@ class UploadedBase64ImageSerializer(serializers.Serializer):
 	def create(self, validated_data):
 		return UploadedBase64Image(**validated_data)
 
-# import base64, uuid
-# from django.core.files.base import ContentFile
-# from rest_framework import serializers
-# # Custom image field - handles base 64 encoded images
-# class Base64ImageField1(serializers.ImageField):
-#     def to_internal_value(self, data):
-#         if isinstance(data, str) and data.startswith('data:image'):
-#             # base64 encoded image - decode
-#             format, imgstr = data.split(';base64,') # format ~= data:image/X,
-#             ext = format.split('/')[-1] # guess file extension
-#             id = uuid.uuid4()
-#             data = ContentFile(base64.b64decode(imgstr), name = id.urn[9:] + '.' + ext)
-#         return super(Base64ImageField1, self).to_internal_value(data)
-
-
-# class PictureDataSerializer(serializers.HyperlinkedModelSerializer):
-# 	file = Base64ImageField1(required=False)
-# 	# img2 = Base64ImageField(required=False)
-
-# 	# def create(self, validated_data):
-# 	# 	return PictureData(**validated_data)
-
-# 	class Meta:
-# 		model=PictureData
-# 		fields=('file', 'created')
-
 class PictureDataSerializer(serializers.ModelSerializer):
 	file=Base64ImageField()
 	file2=Base64ImageField()
